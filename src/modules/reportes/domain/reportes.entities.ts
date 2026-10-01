@@ -8,9 +8,13 @@ export interface VentaPorDia {
   ingresos: number;
 }
 
-export interface OcupacionDia {
+// Datos crudos de un día que entrega el repositorio; el porcentaje lo calcula el caso de uso.
+export interface AforoDia {
   dia_id: number;
   aforo: number;
   vendidas: number;
+}
+
+export interface OcupacionDia extends AforoDia {
   porcentaje: number; // redondeado a 2 decimales
 }

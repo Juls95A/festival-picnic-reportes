@@ -1,11 +1,12 @@
 import type { PrismaClient } from "../../../../generated/prisma/client.ts";
 import { prisma as prismaClient } from "./prisma.client.ts";
-import { ReporteNoImplementadoError } from "../domain/reportes.errors.ts";
-import type { OcupacionDia, VentaPorDia } from "../domain/reportes.entities.ts";
+import type { AforoDia, VentaPorDia } from "../domain/reportes.entities.ts";
 import type { ReportesRepository } from "../domain/reportes.repository.ts";
 
 // Columna @db.Date: Prisma la entrega como Date a medianoche UTC.
 const formatearFecha = (fecha: Date): string => fecha.toISOString().slice(0, 10);
+
+const MAX_INT4 = 2_147_483_647;
 
 // Implementación con Prisma (solo lectura sobre dias y boletas).
 export class PrismaReportesRepository implements ReportesRepository {
@@ -40,7 +41,16 @@ export class PrismaReportesRepository implements ReportesRepository {
     });
   }
 
-  async obtenerOcupacionDia(_diaId: number): Promise<OcupacionDia | null> {
-    throw new ReporteNoImplementadoError("ocupacion");
+  async obtenerAforoDia(diaId: number): Promise<AforoDia | null> {
+    // dias.id es INTEGER: un id mayor no puede existir (y Prisma fallaría al enviarlo).
+    if (diaId > MAX_INT4) return null;
+
+    const [dia, vendidas] = await Promise.all([
+      this.prisma.dias.findUnique({ where: { id: diaId }, select: { id: true, aforo: true } }),
+      this.prisma.boletas.count({ where: { dia_id: diaId, state: "ACTIVE" } }),
+    ]);
+    if (!dia) return null;
+
+    return { dia_id: dia.id, aforo: dia.aforo, vendidas };
   }
 }
