@@ -18,3 +18,28 @@ export interface AforoDia {
 export interface OcupacionDia extends AforoDia {
   porcentaje: number; // redondeado a 2 decimales
 }
+
+// Forma de cada reporte según contratos/12-reportes (bloque artistas y agenda).
+//el promedio y el orden los decide el caso de uso.
+export interface ResumenResenasArtista {
+  artista_id: number;
+  nombre: string;
+  suma_puntajes: number;
+  resenas: number;
+}
+
+export interface ArtistaTop {
+  artista_id: number;
+  nombre: string;
+  promedio: number; // redondeado a 2 decimales
+  resenas: number;
+}
+
+
+export interface ShowAgenda {
+  show_id: number;
+  artista: string;
+  hora_inicio: string; // HH:MM
+  hora_fin: string; // HH:MM
+}
+

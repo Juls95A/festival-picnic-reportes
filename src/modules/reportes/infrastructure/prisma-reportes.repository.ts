@@ -1,6 +1,11 @@
 import type { PrismaClient } from "../../../../generated/prisma/client.ts";
 import { prisma as prismaClient } from "./prisma.client.ts";
-import type { AforoDia, VentaPorDia } from "../domain/reportes.entities.ts";
+import type {
+  AforoDia,
+  ResumenResenasArtista,
+  ShowAgenda,
+  VentaPorDia,
+} from "../domain/reportes.entities.ts";
 import type { ReportesRepository } from "../domain/reportes.repository.ts";
 
 // Columna @db.Date: Prisma la entrega como Date a medianoche UTC.
@@ -8,7 +13,7 @@ const formatearFecha = (fecha: Date): string => fecha.toISOString().slice(0, 10)
 
 const MAX_INT4 = 2_147_483_647;
 
-// Implementación con Prisma (solo lectura sobre dias y boletas).
+// Implementación con Prisma (solo lectura sobre dias, boletas, resenas, shows, artistas y escenarios).
 export class PrismaReportesRepository implements ReportesRepository {
   constructor(private readonly prisma: PrismaClient = prismaClient) {}
 
@@ -52,5 +57,59 @@ export class PrismaReportesRepository implements ReportesRepository {
     if (!dia) return null;
 
     return { dia_id: dia.id, aforo: dia.aforo, vendidas };
+  }
+
+  async obtenerResumenResenasPorArtista(): Promise<ResumenResenasArtista[]> {
+    // Solo reseñas ACTIVE de shows ACTIVE (regla del contrato: solo se cuenta lo ACTIVE).
+    const resenas = await this.prisma.resenas.findMany({
+      where: { state: "ACTIVE", shows: { state: "ACTIVE" } },
+      select: {
+        puntaje: true,
+        shows: { select: { artista_id: true, artistas: { select: { nombre: true } } } },
+      },
+    });
+
+    const porArtista = new Map<number, ResumenResenasArtista>();
+    for (const resena of resenas) {
+      const artistaId = resena.shows.artista_id;
+      const actual = porArtista.get(artistaId) ?? {
+        artista_id: artistaId,
+        nombre: resena.shows.artistas.nombre,
+        suma_puntajes: 0,
+        resenas: 0,
+      };
+      actual.suma_puntajes += resena.puntaje;
+      actual.resenas += 1;
+      porArtista.set(artistaId, actual);
+    }
+    return [...porArtista.values()];
+  }
+
+  async existeEscenario(escenarioId: number): Promise<boolean> {
+    if (escenarioId > MAX_INT4) return false;
+    const escenario = await this.prisma.escenarios.findUnique({
+      where: { id: escenarioId },
+      select: { id: true },
+    });
+    return escenario !== null;
+  }
+
+  async obtenerAgendaEscenario(escenarioId: number, diaId: number): Promise<ShowAgenda[]> {
+    // Un dia_id fuera de INTEGER no puede tener shows (y Prisma fallaría al enviarlo).
+    if (escenarioId > MAX_INT4 || diaId > MAX_INT4) return [];
+
+    const shows = await this.prisma.shows.findMany({
+      where: { escenario_id: escenarioId, dia_id: diaId, state: "ACTIVE" },
+      select: { id: true, hora_inicio: true, hora_fin: true, artistas: { select: { nombre: true } } },
+      // hora_inicio es HH:MM con cero inicial, así que el orden alfabético es el cronológico.
+      orderBy: [{ hora_inicio: "asc" }, { id: "asc" }],
+    });
+
+    return shows.map((show) => ({
+      show_id: show.id,
+      artista: show.artistas.nombre,
+      hora_inicio: show.hora_inicio,
+      hora_fin: show.hora_fin,
+    }));
   }
 }
