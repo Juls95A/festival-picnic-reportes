@@ -4,6 +4,8 @@ import type { ObtenerOcupacionDiaUseCase } from "../application/obtener-ocupacio
 import type { ObtenerTopArtistasUseCase } from "../application/obtener-top-artistas.use-case.ts";
 import type { ObtenerVentasPorDiaUseCase } from "../application/obtener-ventas-por-dia.use-case.ts";
 import { ReporteValidacionError } from "../domain/reportes.errors.ts";
+import type { ObtenerTopProductosComidaUseCase } from "../application/obtener-top-productos-comida.use-case.ts";
+
 
 type ValorParametro = Request["query"][string] | Request["params"][string];
 
@@ -35,6 +37,7 @@ export class ReportesController {
     private readonly obtenerOcupacionDia: ObtenerOcupacionDiaUseCase,
     private readonly obtenerTopArtistas: ObtenerTopArtistasUseCase,
     private readonly obtenerAgendaEscenario: ObtenerAgendaEscenarioUseCase,
+    private readonly obtenerTopProductosComida: ObtenerTopProductosComidaUseCase,
   ) {}
 
   ventasPorDia = async (_req: Request, res: Response, next: NextFunction) => {
@@ -69,6 +72,15 @@ export class ReportesController {
       const escenarioId = parsearIdPositivo(req.params.escenarioId, "escenarioId");
       const diaId = parsearIdObligatorio(req.query.dia_id, "dia_id");
       res.status(200).json({ data: await this.obtenerAgendaEscenario.execute(escenarioId, diaId) });
+    } catch (error) {
+      next(error);
+    }
+  };
+    topProductosComida = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.status(200).json({
+        data: await this.obtenerTopProductosComida.execute(),
+      });
     } catch (error) {
       next(error);
     }

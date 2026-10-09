@@ -2,6 +2,7 @@ import type { PrismaClient } from "../../../../generated/prisma/client.ts";
 import { prisma as prismaClient } from "./prisma.client.ts";
 import type {
   AforoDia,
+  ProductoComidaTop,
   ResumenResenasArtista,
   ShowAgenda,
   VentaPorDia,
@@ -15,7 +16,7 @@ const MAX_INT4 = 2_147_483_647;
 
 // Implementación con Prisma (solo lectura sobre dias, boletas, resenas, shows, artistas y escenarios).
 export class PrismaReportesRepository implements ReportesRepository {
-  constructor(private readonly prisma: PrismaClient = prismaClient) {}
+  constructor(private readonly prisma: PrismaClient = prismaClient) { }
 
   async obtenerVentasPorDia(): Promise<VentaPorDia[]> {
     const [dias, ventas] = await Promise.all([
@@ -111,5 +112,49 @@ export class PrismaReportesRepository implements ReportesRepository {
       hora_inicio: show.hora_inicio,
       hora_fin: show.hora_fin,
     }));
+  }
+
+  async obtenerTopProductosComida(): Promise<ProductoComidaTop[]> {
+    const pedidos = await this.prisma.pedidos_comida.findMany({
+      where: {
+        state: "ACTIVE",
+        productos_comida: {
+          state: "ACTIVE",
+        },
+      },
+      select: {
+        producto_id: true,
+        cantidad: true,
+        total: true,
+        productos_comida: {
+          select: { nombre: true },
+        },
+      },
+    });
+
+    const productos = new Map<number, ProductoComidaTop>();
+
+    for (const pedido of pedidos) {
+      const productoId = pedido.producto_id;
+      const actual = productos.get(productoId);
+
+      if (actual) {
+        actual.unidades += pedido.cantidad;
+        actual.ingresos += pedido.total;
+      } else {
+        productos.set(productoId, {
+          producto_id: productoId,
+          nombre: pedido.productos_comida.nombre,
+          unidades: pedido.cantidad,
+          ingresos: pedido.total,
+        });
+      }
+    }
+
+    return [...productos.values()].sort(
+      (a, b) =>
+        b.unidades - a.unidades ||
+        a.nombre.localeCompare(b.nombre),
+    );
   }
 }

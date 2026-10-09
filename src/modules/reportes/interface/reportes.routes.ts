@@ -6,6 +6,7 @@ import { ObtenerVentasPorDiaUseCase } from "../application/obtener-ventas-por-di
 import { PrismaReportesRepository } from "../infrastructure/prisma-reportes.repository.ts";
 import { ReportesController } from "./reportes.controller.ts";
 import { reportesErrorHandler } from "./reportes.error-handler.ts";
+import { ObtenerTopProductosComidaUseCase } from "../application/obtener-top-productos-comida.use-case.ts";
 
 const repository = new PrismaReportesRepository();
 const controller = new ReportesController(
@@ -13,6 +14,7 @@ const controller = new ReportesController(
   new ObtenerOcupacionDiaUseCase(repository),
   new ObtenerTopArtistasUseCase(repository),
   new ObtenerAgendaEscenarioUseCase(repository),
+  new ObtenerTopProductosComidaUseCase(repository),
 );
 
 export const reportesRouter = Router();
@@ -21,5 +23,6 @@ reportesRouter.get("/ventas-por-dia", controller.ventasPorDia);
 reportesRouter.get("/ocupacion/:diaId", controller.ocupacion);
 reportesRouter.get("/top-artistas", controller.topArtistas);
 reportesRouter.get("/escenarios/:escenarioId/agenda", controller.agendaEscenario);
+reportesRouter.get("/comida/top-productos",controller.topProductosComida,);
 
 reportesRouter.use(reportesErrorHandler);
