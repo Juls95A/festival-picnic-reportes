@@ -1,4 +1,10 @@
-import type {AforoDia,ResumenResenasArtista,ShowAgenda,VentaPorDia} from "./reportes.entities.ts";
+import type {
+  AforoDia,
+  ProductoComidaTop,
+  ResumenResenasArtista,
+  ShowAgenda,
+  VentaPorDia,
+} from "./reportes.entities.ts";
 
 // Puerto de solo lectura: los casos de uso dependen de esta interfaz, no del ORM.
 export interface ReportesRepository {
@@ -20,5 +26,8 @@ export interface ReportesRepository {
 
   /** Shows ACTIVE del escenario en ese día, con el nombre del artista, ordenados por hora_inicio. */
   obtenerAgendaEscenario(escenarioId: number, diaId: number): Promise<ShowAgenda[]>;
+
+  /** Productos con pedidos activos, ordenados por unidades vendidas. */
+  obtenerTopProductosComida(): Promise<ProductoComidaTop[]>;
 }
 

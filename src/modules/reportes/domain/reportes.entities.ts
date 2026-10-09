@@ -43,3 +43,10 @@ export interface ShowAgenda {
   hora_fin: string; // HH:MM
 }
 
+export interface ProductoComidaTop {
+  producto_id: number;
+  nombre: string;
+  unidades: number;
+  ingresos: number;
+}
+
