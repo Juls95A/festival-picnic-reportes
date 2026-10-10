@@ -76,15 +76,51 @@ npm run dev
 
 Por defecto, el servidor utiliza el puerto `3000`, salvo que se configure otro mediante `PORT`.
 
-## Pruebas
+Verificación de los endpoints desde la terminal
+
+Para consultar las respuestas de los endpoints manualmente, primero inicia el servidor con npm run dev y deja esa terminal abierta.
+
+Después, abre una segunda terminal de PowerShell en VS Code y ejecuta los siguientes comandos, uno por uno.
+
+1. Ventas por día
+
+Invoke-RestMethod "http://localhost:3000/api/reportes/ventas-por-dia"
+
+2. Top de artistas
+
+Consulta los tres artistas mejor calificados:
+
+Invoke-RestMethod "http://localhost:3000/api/reportes/top-artistas?limit=3"
+
+3. Ocupación de un día
+
+Consulta la ocupación del día con ID 4:
+
+Invoke-RestMethod "http://localhost:3000/api/reportes/ocupacion/4"
+
+4. Agenda de un escenario
+
+Consulta la agenda del escenario con ID 1 para el día con ID 1:
+
+Invoke-RestMethod "http://localhost:3000/api/reportes/escenarios/1/agenda?dia_id=1"
+
+5. Productos más vendidos de comida
+
+Invoke-RestMethod "http://localhost:3000/api/reportes/comida/top-productos"
+
+Los comandos anteriores muestran en PowerShell las respuestas devueltas por la API. También puedes abrir las mismas direcciones en el navegador, siempre que el servidor esté en ejecución.
+
+Pruebas automatizadas
 
 Con el servidor en ejecución, abre otra terminal y ejecuta las pruebas públicas del módulo:
 
-```bash
 node pruebas/correr.mjs reportes http://localhost:3000
-```
 
-Las pruebas públicas verifican el comportamiento de los endpoints, incluyendo validaciones de parámetros y el ranking de productos de comida.
+Las pruebas públicas verifican el comportamiento de los endpoints, incluyendo las validaciones de parámetros y el ranking de productos de comida.
+
+Para comprobar que el código TypeScript no tenga errores de tipos, también puedes ejecutar:
+
+npx tsc --noEmit
 
 ## Ejemplo de respuesta: top de productos de comida
 
@@ -119,13 +155,11 @@ El reporte considera registros con `state = 'ACTIVE'`, agrupa las cantidades y l
 
 ## Estado de verificación
 
-Durante la implementación del endpoint de top de productos de comida se ejecutó el comando:
+Durante la implementación del endpoint de top de productos de comida se ejecutó el comando npx tsc --noEmit, que terminó sin errores.
 
-```bash
-npx tsc --noEmit
-```
+También se ejecutaron las pruebas públicas del módulo Reportes y se obtuvo un resultado de 9/9 pruebas aprobadas.
 
-La comprobación terminó sin errores. También se ejecutaron las pruebas públicas de Reportes y se obtuvo un resultado de **9/9 pruebas aprobadas**.
+El resultado documentado corresponde a la ejecución realizada durante el desarrollo. Puedes volver a ejecutar los comandos anteriores para verificar el estado actual del proyecto.
 
 ## Contratos del proyecto
 
