@@ -31,6 +31,20 @@ El módulo utiliza cuatro capas:
 
 Los casos de uso dependen de la interfaz del repositorio y no directamente de Prisma.
 
+## Integrantes y aportes
+
+- **Integrante 1 — Juliana Álvarez:** preparación y configuración inicial del proyecto, construcción de la arquitectura base de Reportes y desarrollo de la primera parte funcional del módulo.
+- **Integrante 2 — Sara Moncada:** desarrollo de la segunda parte del módulo de Reportes, incluyendo los casos de uso, consultas y endpoints asignados.
+- **Integrante 3 — María José Hincapié:** finalización e integración del módulo, implementación del reporte de productos de comida, validaciones de parámetros, verificación de endpoints, pruebas públicas y documentación final.
+
+## Regla de negocio: productos de comida más vendidos
+
+El reporte considera los pedidos y productos que tienen el estado `ACTIVE`. Agrupa las cantidades por producto, calcula las unidades vendidas y los ingresos, y ordena los resultados de mayor a menor según las unidades vendidas.
+
+**Archivo de implementación:** `src/modules/reportes/infrastructure/prisma-reportes.repository.ts`.
+
+**Cómo se probó:** se ejecutó `node pruebas/correr.mjs reportes http://localhost:3000`. Las nueve pruebas públicas pasaron, incluida la prueba que verifica el orden de los productos por unidades vendidas.
+
 ## Base de datos
 
 El módulo consulta tablas compartidas relacionadas con días, boletas, artistas, shows, reseñas, escenarios y pedidos y productos de comida.
