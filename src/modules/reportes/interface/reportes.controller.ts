@@ -9,12 +9,25 @@ import type { ObtenerTopProductosComidaUseCase } from "../application/obtener-to
 
 type ValorParametro = Request["query"][string] | Request["params"][string];
 
+
+const MAX_INT4 = 2_147_483_647;
+
 const parsearIdPositivo = (valor: ValorParametro, campo: string): number => {
-  if (typeof valor !== "string" || !/^\d+$/.test(valor) || Number(valor) < 1) {
-    throw new ReporteValidacionError(`${campo} debe ser un entero positivo`);
+  if (
+    typeof valor !== "string" ||
+    !/^\d+$/.test(valor) ||
+    !Number.isSafeInteger(Number(valor)) ||
+    Number(valor) < 1 ||
+    Number(valor) > MAX_INT4
+  ) {
+    throw new ReporteValidacionError(
+      `${campo} debe ser un entero positivo válido`,
+    );
   }
+
   return Number(valor);
 };
+
 
 // Parámetro de query obligatorio: si no viene → 400 con mensaje propio; si viene mal → 400.
 const parsearIdObligatorio = (valor: ValorParametro, campo: string): number => {
